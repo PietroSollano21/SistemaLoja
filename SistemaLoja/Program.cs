@@ -13,63 +13,83 @@ bool continuar = true;
 }
 static void ExibirProdutos(List<Produto> produtos)
 {
+    Dictionary<string, decimal> precos = new Dictionary<string, decimal>();
+    foreach(Produto produto in produtos)
+    {
+        precos[produto.Nome] = produto.Preco;
+    }
+
     if (produtos.Count == 0)
     {
         Console.WriteLine("Nenhum produto cadastrado.");
     }
     else
     {
+        decimal somaPrecos = 0;
         Console.WriteLine("Produtos cadastrados:");
-        for (int i = 0; i < produtos.Count; i++)
+        foreach(KeyValuePair<string, decimal> produto in precos)
         {
-            Console.WriteLine($"{i + 1} - {produtos[i].Nome} | {produtos[i].Preco:C2} | {produtos[i].Quantidade} disponível(eis)");
+            Console.WriteLine($"{produto.Key} | {produto.Value:C2}");
+            somaPrecos += produto.Value;
         }
+        Console.WriteLine($"Soma dos preços : {somaPrecos:C2}");
+        Console.WriteLine($"Total de produtos: {precos.Count}");
     }
 }
 static decimal CalcularTotal(decimal preco, int quantidade)
 {
     return preco * quantidade;
 }
-static Produto CriarProduto(string nome, decimal preco, int quantidade)
+static Produto CriarProduto()
 {
-    Produto produto = new Produto();
-    produto.Nome = nome;
-    produto.Preco = preco;
-    produto.Quantidade = quantidade;
-    return produto;
+Console.Write("Informe o nome do produto:");
+string nomeProduto = Console.ReadLine();
+
+while (string.IsNullOrWhiteSpace(nomeProduto))
+{
+    Console.WriteLine("O nome do produto não pode ficar vazio!");
+    Console.Write("Informe o nome do produto novamente:");
+    nomeProduto = Console.ReadLine();
+}
+Console.Write("Informe o preço do produto:");
+decimal precoProduto;
+ 
+while (!decimal.TryParse(Console.ReadLine(), out precoProduto) || precoProduto <= 0)
+{
+    Console.WriteLine("O preço do produto não pode ser negativo!");
+    Console.Write("Informe o preço do produto novamente:");
+}
+Console.Write("Informe a quantidade do produto:");
+int quantidadeProduto;
+ 
+while (!int.TryParse(Console.ReadLine(), out quantidadeProduto) || quantidadeProduto < 0)
+{
+    Console.WriteLine("A quantidade do produto não pode ser negativa!");
+    Console.Write("Informe a quantidade do produto novamente:");
+}
+decimal valorTotal = CalcularTotal(precoProduto, quantidadeProduto);
+Console.WriteLine($"O produto {nomeProduto} foi registrado");
+return new Produto(nomeProduto, precoProduto, quantidadeProduto);
 }
 static void RealizarCompra(List<Produto> produtos)
 {
-    if (produtos.Count == 0)
-    {
-        Console.WriteLine("Nenhum produto cadastrado.");
-        return;
-    }
-
-    Console.WriteLine("Produtos cadastrados:");
-    ExibirProdutos(produtos);
-
     Console.Write("Qual produto deseja comprar? (Digite o número correspondente): ");
     int produtoEscolhido;
     while (!int.TryParse(Console.ReadLine(), out produtoEscolhido) || produtoEscolhido < 1 || produtoEscolhido > produtos.Count)
     {
         Console.Write("Produto inválido. Escolha novamente: ");
     }
-
-    Produto escolhaProduto = produtos[produtoEscolhido - 1];
-
     Console.Write("Quantas unidades deseja comprar?: ");
-    int quantidadeCompra;
-    while (!int.TryParse(Console.ReadLine(), out quantidadeCompra) || quantidadeCompra <= 0)
+            int quantidadeCompra;
+            while (!int.TryParse(Console.ReadLine(), out quantidadeCompra) || quantidadeCompra <= 0)
+            {
+                Console.Write("Quantidade inválida. Digite novamente: ");
+            }
+    bool vendaRealizada = produtos[produtoEscolhido - 1].Quantidade >= quantidadeCompra;
+    if (vendaRealizada)
     {
-        Console.Write("Quantidade inválida. Digite novamente: ");
-    }
-
-    if (quantidadeCompra <= escolhaProduto.Quantidade)
-    {
-        decimal totalCompra = CalcularTotal(escolhaProduto.Preco, quantidadeCompra);
-        escolhaProduto.Quantidade -= quantidadeCompra;
-        Console.WriteLine($"Produto: {escolhaProduto.Nome}");
+        decimal totalCompra = CalcularTotal(produtos[produtoEscolhido - 1].Preco, quantidadeCompra);
+        Console.WriteLine($"Produto: {produtos[produtoEscolhido - 1].Nome}");
         Console.WriteLine($"Quantidade: {quantidadeCompra}");
         Console.WriteLine($"Total: {totalCompra:C2}");
     }
@@ -78,6 +98,40 @@ static void RealizarCompra(List<Produto> produtos)
         Console.WriteLine("Estoque insuficiente.");
     }
 } 
+static Produto TestarCadastro()
+{
+    try
+    {
+        string nome = "abc";
+        decimal preco = 55;
+        int quantidade = 10;
+        Produto produto = new Produto(nome, preco, quantidade);
+        return produto;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erro ao testar cadastro: {ex.Message}");
+        return new Produto("", 0, 0);
+    }
+    finally
+    {
+        Console.WriteLine("Teste Finalizado");
+    }
+}
+static void BuscarProduto(List<Produto> produtos)
+{
+    Console.Write("Qual produto deseja buscar?: ");
+    string nomeBusca = Console.ReadLine();
+    Produto produtoEncontrado = produtos.FirstOrDefault(p => p.Nome.Contains(nomeBusca));
+    if (produtoEncontrado != null)
+    {
+        Console.WriteLine($"Produto encontrado: {produtoEncontrado.Nome} | {produtoEncontrado.Preco:C2} | {produtoEncontrado.Quantidade} disponível(eis)");
+    }
+    else
+    {
+        Console.WriteLine("Produto não encontrado.");
+    }
+}
 while(continuar)
 {
     ExibirMenu();
@@ -89,61 +143,7 @@ while(!int.TryParse(Console.ReadLine(), out resposta) || resposta <= 0 || respos
 switch(resposta)
 {
     case 1:
-Produto produto = CriarProduto("", 0, 0);
-
-Console.Write("Informe o nome do produto:");
-string nomeProduto = Console.ReadLine();
-
-while (string.IsNullOrWhiteSpace(nomeProduto))
-{
-    Console.WriteLine("O nome do produto não pode ficar vazio!");
-    Console.Write("Informe o nome do produto novamente:");
-    nomeProduto = Console.ReadLine();
-}
-produto.Nome = nomeProduto;
-Console.Write("Informe o preço do produto:");
-decimal precoProduto;
- 
-while (!decimal.TryParse(Console.ReadLine(), out precoProduto) || precoProduto <= 0)
-{
-    Console.WriteLine("O preço do produto não pode ser negativo!");
-    Console.Write("Informe o preço do produto novamente:");
-}
-produto.Preco = precoProduto;
-Console.Write("Informe a quantidade do produto:");
-int quantidadeProduto;
- 
-while (!int.TryParse(Console.ReadLine(), out quantidadeProduto) || quantidadeProduto < 0)
-{
-    Console.WriteLine("A quantidade do produto não pode ser negativa!");
-    Console.Write("Informe a quantidade do produto novamente:");
-}
-produto.Quantidade = quantidadeProduto;
-decimal valorTotal = CalcularTotal(precoProduto, quantidadeProduto);
-Console.Write("Há desconto? (S/N):");
-string respostaDesconto = Console.ReadLine();
-while (respostaDesconto.ToUpper() != "S" && respostaDesconto.ToUpper() != "N")
-{
-    Console.WriteLine("Resposta inválida. Digite S para sim ou N para não.");
-    Console.Write("Há desconto? (S/N):");
-    respostaDesconto = Console.ReadLine();
-}
-if (respostaDesconto.ToUpper() == "S")
-{
-    Console.Write("Informe o desconto: ");
-    decimal desconto;
-    while (!decimal.TryParse(Console.ReadLine(), out desconto) || desconto < 0 || desconto > 100)
-    {
-        Console.Write("Desconto inválido. O desconto deve estar entre 0 e 100 \n informe novamente o desconto:");
-    }
-    decimal valorComDesconto = valorTotal * (desconto / 100);
-    decimal valorfinal = valorTotal - valorComDesconto;
-    Console.WriteLine($"O produto {nomeProduto} foi registrado");
-}
-if (respostaDesconto.ToUpper() == "N")
-{
-Console.WriteLine($"O produto {nomeProduto} foi registrado");
-}
+Produto produto = CriarProduto();
 produtos.Add(produto);
 break;
 
@@ -166,32 +166,7 @@ while (respostaCompra.ToUpper() != "S" && respostaCompra.ToUpper() != "N")
 }
 if(respostaCompra.ToUpper() == "S")
 {
-    Console.Write("Qual produto irá comprar? (selecione sua numeração):");
-    int produtoEscolhido;
-    while(!int.TryParse(Console.ReadLine(), out produtoEscolhido) || produtoEscolhido < 1 || produtoEscolhido > produtos.Count)
-    {
-        Console.Write("Produto inválido.Escolha Novamente:");
-    }
-    int quantidadeCompra;
-    Console.Write("Quantas unidades deseja comprar?:");
-    while(!int.TryParse(Console.ReadLine(), out quantidadeCompra) || quantidadeCompra <= 0)
-    {
-        Console.Write("Quantidade inválida. Digite novamente: ");
-    }
-    if(quantidadeCompra <= produtos[produtoEscolhido - 1].Quantidade)
-    {
-        decimal totalCompra = CalcularTotal(produtos[produtoEscolhido - 1].Preco, quantidadeCompra);
-        produtos[produtoEscolhido - 1].Quantidade -= quantidadeCompra;
-        Console.WriteLine($"Produto: {produtos[produtoEscolhido - 1].Nome}");
-        Console.WriteLine($"Quantidade: {quantidadeCompra}");
-        Console.WriteLine($"Total {totalCompra:C2}");
-    }
-    else
-    {
-        Console.WriteLine("Estoque insuficiente");
-    }
-    Produto escolhaProduto = produtos[produtoEscolhido - 1];
-    Console.WriteLine($"Você escolheu: {escolhaProduto.Nome}");
+    RealizarCompra(produtos);
 }
 else
 {
@@ -208,5 +183,20 @@ default:
     Console.WriteLine("Opção inválida");
     break;
 }
+}
+double[] notas = { 7.5, 8.0, 6.5, 9.0, 10.0 };
+double soma = 0;
+Console.WriteLine($"Notas: {string.Join(", ", notas)}");
+foreach (double nota in notas)
+{
+    soma += nota;
+}
+double média = soma / notas.Length;
+Console.WriteLine($"Soma: {soma}");
+Console.WriteLine($"Média: {média:F2}");
+Console.WriteLine("Notas:");
+foreach (double nota in notas)
+{
+    Console.WriteLine($"- {nota:F2}");
 }
 
