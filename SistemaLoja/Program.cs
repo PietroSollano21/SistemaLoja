@@ -81,14 +81,14 @@ static void RealizarCompra(List<Produto> produtos)
     }
     Console.Write("Quantas unidades deseja comprar?: ");
             int quantidadeCompra;
-            while (!int.TryParse(Console.ReadLine(), out quantidadeCompra) || quantidadeCompra <= 0)
-            {
-                Console.Write("Quantidade inválida. Digite novamente: ");
-            }
-    bool vendaRealizada = produtos[produtoEscolhido - 1].Quantidade >= quantidadeCompra;
+            while (!int.TryParse(Console.ReadLine(), out quantidadeCompra) || !produtos[produtoEscolhido - 1].TemEstoque(quantidadeCompra))
+{
+    Console.Write("Quantidade inválida. Digite novamente: ");
+}
+    bool vendaRealizada = produtos[produtoEscolhido - 1].Vender(quantidadeCompra);
     if (vendaRealizada)
     {
-        decimal totalCompra = CalcularTotal(produtos[produtoEscolhido - 1].Preco, quantidadeCompra);
+        decimal totalCompra = produtos[produtoEscolhido - 1].Preco * quantidadeCompra;
         Console.WriteLine($"Produto: {produtos[produtoEscolhido - 1].Nome}");
         Console.WriteLine($"Quantidade: {quantidadeCompra}");
         Console.WriteLine($"Total: {totalCompra:C2}");
@@ -122,16 +122,20 @@ static void BuscarProduto(List<Produto> produtos)
 {
     Console.Write("Qual produto deseja buscar?: ");
     string nomeBusca = Console.ReadLine();
-    Produto produtoEncontrado = produtos.FirstOrDefault(p => p.Nome.Contains(nomeBusca));
-    if (produtoEncontrado != null)
+    List<Produto> produtoEncontrado = produtos.Where(p => p.Nome.Contains(nomeBusca, StringComparison.OrdinalIgnoreCase)).ToList();
+    if (produtoEncontrado.Count > 0)
     {
-        Console.WriteLine($"Produto encontrado: {produtoEncontrado.Nome} | {produtoEncontrado.Preco:C2} | {produtoEncontrado.Quantidade} disponível(eis)");
+        foreach(Produto produto in produtoEncontrado)
+        {
+        Console.WriteLine($"Produtos encontrados: {produto.Nome} | {produto.Preco:C2} | {produto.Quantidade} disponível(eis)");
+        }  
     }
     else
     {
-        Console.WriteLine("Produto não encontrado.");
+        Console.WriteLine("Nenhum produto encontrado.");
     }
 }
+
 while(continuar)
 {
     ExibirMenu();
@@ -154,6 +158,7 @@ if(produtos.Count == 0)
 }
 else
 {
+    BuscarProduto(produtos);
 Console.WriteLine("Podutos Cadastrados:");
 ExibirProdutos(produtos);
 Console.Write("Deseja Realizar uma compra? S/N:");

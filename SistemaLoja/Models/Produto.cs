@@ -36,21 +36,29 @@ public class Produto
         Console.WriteLine("O preço não pode ser negativo.");
     }
 }
-    public void Vender(int quantidade)
+    public bool Vender(int quantidade)
         {
             
            if(quantidade <= 0)
             {
                 Console.WriteLine("A quantidade de venda deve ser maior que zero.");
-                return;
+                return false;
             }
             if(quantidade > Quantidade)
             {
                 Console.WriteLine($"Não há estoque suficiente para vender {quantidade} unidades do produto {Nome}. Estoque disponível: {Quantidade}");
-                return;
+                return false;
             }
             Quantidade -= quantidade;
             Console.WriteLine("Venda realizada com sucesso!");
+            return true;
+        }
+        public bool TemEstoque(int quantidadeCompra)
+        {
+            
+            if(Quantidade < quantidadeCompra )
+                    return false;
+                return Quantidade >= quantidadeCompra;
         }
 }
 }
